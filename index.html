@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clothes Rack</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --cream: #f5f5dc;
@@ -37,7 +38,7 @@
             padding: 20px;
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 25px;
+            gap: 20px;
             align-items: start;
         }
 
@@ -81,6 +82,7 @@
             height: 100%;
             display: flex;
             flex-direction: column;
+            min-width: 0; /* Prevents overflow */
         }
 
         .section:hover {
@@ -260,6 +262,8 @@
             min-width: 250px;
             max-width: 400px;
             font-size: 1.1em;
+            position: relative;
+            padding-right: 40px;
         }
 
         .notification.show {
@@ -382,9 +386,16 @@
         .timer-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            grid-template-rows: auto auto;
             gap: 15px;
             margin: 20px 0;
+            width: 100%;
+        }
+
+        .timer-grid .button,
+        .timer-grid .reset-timer {
+            width: 100%;
+            height: 48px;
+            margin: 0;
         }
 
         .timer-display {
@@ -404,27 +415,6 @@
             align-items: center;
             justify-content: center;
             margin: 10px 0;
-        }
-
-        .timer-grid .button,
-        .timer-grid .reset-timer {
-            background: linear-gradient(135deg, var(--warm-gray) 0%, #a08b6f 100%);
-            color: var(--light-cream);
-            border: none;
-            padding: 16px 32px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 1.1em;
-            transition: all 0.3s ease;
-            box-shadow: 
-                0 4px 6px var(--shadow-color),
-                0 1px 3px rgba(0,0,0,0.1);
-            height: 56px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 500;
-            width: 100%;
         }
 
         .timer-grid .button:hover,
@@ -468,6 +458,171 @@
                 height: 48px;
                 font-size: 1em;
             }
+        }
+
+        /* New Component Styles */
+        .physical-activation {
+            font-size: 0.9em;
+            color: var(--warm-gray);
+            font-style: italic;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .dryness-level {
+            background: linear-gradient(135deg, var(--cream) 0%, #f0e6d2 100%);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 
+                0 2px 4px var(--shadow-color),
+                inset 0 1px 2px rgba(255,255,255,0.5);
+            transition: transform 0.3s ease;
+            display: none;
+        }
+
+        .dryness-level h3 {
+            color: var(--warm-gray);
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .dryness-level .value {
+            font-size: 1.5em;
+            font-weight: 500;
+            color: var(--warm-gray);
+        }
+
+        .close-notification {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--light-cream);
+            cursor: pointer;
+            font-size: 1.2em;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+
+        .close-notification:hover {
+            opacity: 1;
+        }
+
+        .chart-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 
+                0 4px 6px var(--shadow-color),
+                0 1px 3px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .chart-container.show {
+            display: block;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .chart-toggle {
+            background: none;
+            border: none;
+            color: var(--warm-gray);
+            cursor: pointer;
+            font-size: 0.9em;
+            text-decoration: underline;
+            margin-top: 10px;
+            display: block;
+            width: 100%;
+            text-align: center;
+        }
+
+        .toast-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #ff6b6b;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: none;
+            z-index: 1000;
+            animation: slideIn 0.3s ease forwards;
+        }
+
+        .show-more-button {
+            background: none;
+            border: none;
+            color: var(--warm-gray);
+            cursor: pointer;
+            font-size: 1em;
+            padding: 10px 20px;
+            margin: 20px auto;
+            display: block;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+        }
+
+        .show-more-button:hover {
+            background: var(--shadow-color);
+        }
+
+        .emergency-button {
+            background: linear-gradient(135deg, #e6a23c 0%, #f0b74d 100%);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 4px 6px rgba(230, 162, 60, 0.2),
+                0 1px 3px rgba(0,0,0,0.1);
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .emergency-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 6px 8px rgba(230, 162, 60, 0.3),
+                0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .app-control-banner,
+        .app-control-banner a,
+        .app-control-banner a:hover {
+            display: none;
+        }
+
+        .manual-override {
+            text-align: center;
+            margin-top: 15px;
+            color: var(--warm-gray);
+            font-size: 0.9em;
+            font-style: italic;
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+        }
+
+        .notification.fade-out {
+            animation: fadeOut 0.5s ease forwards;
         }
     </style>
 </head>
@@ -515,9 +670,9 @@
                     <button class="reset-timer" id="resetTimer">Reset</button>
                 </div>
                 <div class="timer-display" id="timer">00:00:00</div>
-                <div class="manual-override">
-                    <p>Last manual control: <span id="lastManualTime">--:--</span></p>
-                </div>
+                <button class="emergency-button" id="emergencyCover">
+                    🛑 Manual Close
+                </button>
             </div>
         </div>
 
@@ -528,7 +683,12 @@
             </div>
             <div class="notification" id="dryingAlert">
                 Clothes have been drying for over 24 hours!
+                <button class="close-notification" onclick="dismissNotification('dryingAlert')">❌</button>
             </div>
+        </div>
+
+        <div class="toast-notification" id="apiError">
+            ⚠️ System offline
         </div>
     </div>
 
@@ -538,12 +698,6 @@
         let seconds = 0;
         const timerDisplay = document.getElementById('timer');
         const startTimerBtn = document.getElementById('startTimer');
-        const lastManualTime = document.getElementById('lastManualTime');
-
-        function updateLastManualTime() {
-            const now = new Date();
-            lastManualTime.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        }
 
         function updateTimer() {
             const hours = Math.floor(seconds / 3600);
@@ -581,7 +735,6 @@
                 });
                 if (response.ok) {
                     document.getElementById('coverState').textContent = 'Extended';
-                    updateLastManualTime();
                 }
             } catch (error) {
                 console.error('Error extending cover:', error);
@@ -597,7 +750,6 @@
                 });
                 if (response.ok) {
                     document.getElementById('coverState').textContent = 'Retracted';
-                    updateLastManualTime();
                 }
             } catch (error) {
                 console.error('Error retracting cover:', error);
@@ -657,6 +809,46 @@
             startTimerBtn.textContent = 'Start Timer';
             document.getElementById('dryingAlert').classList.remove('show');
         });
+
+        function dismissNotification(id) {
+            const notification = document.getElementById(id);
+            notification.classList.add('fade-out');
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 500);
+        }
+
+        function showApiError(message) {
+            const toast = document.getElementById('apiError');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 5000);
+        }
+
+        // Emergency button functionality
+        document.getElementById('emergencyCover').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/control', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ command: 'manualClose' })
+                });
+                if (response.ok) {
+                    document.getElementById('coverState').textContent = 'Extended';
+                } else {
+                    showApiError('⚠️ Manual close activation failed');
+                }
+            } catch (error) {
+                showApiError('⚠️ System offline');
+            }
+        });
+
+        // Auto-hide drying alert after 5 seconds
+        setTimeout(() => {
+            dismissNotification('dryingAlert');
+        }, 5000);
     </script>
 </body>
 </html> 
